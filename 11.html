@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CallMeMaybe - Interactive Calling Conventions</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    html { scroll-behavior: smooth; }
+    .active { font-weight: bold; color: #4f46e5; }
+    .code-box {
+      background-color: #1e1e2f;
+      color: #00ff88;
+      font-family: monospace;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      white-space: pre-wrap;
+    }
+    .animate-highlight {
+      background-color: #fffa;
+      animation: blink 1s steps(2, start) 3;
+    }
+    @keyframes blink {
+      to { background-color: transparent; }
+    }
+  </style>
+  <script>
+    function checkAnswer(questionId, correct) {
+      const result = document.getElementById(questionId + '-result');
+      const selected = document.querySelector(`input[name="${questionId}"]:checked`);
+      if (!selected) {
+        result.textContent = "💬 Please select an answer first.";
+        result.className = "text-yellow-600";
+        return;
+      }
+      if (selected.value === correct) {
+        result.textContent = "✅ Correct! 🎉";
+        result.className = "text-green-600 font-semibold";
+      } else {
+        result.textContent = "❌ Incorrect. Give it another shot!";
+        result.className = "text-red-600 font-semibold";
+      }
+    }
+
+    function runAnimation() {
+      const steps = document.querySelectorAll('.anim-line');
+      let delay = 0;
+      steps.forEach((el, i) => {
+        setTimeout(() => {
+          el.classList.add('animate-highlight');
+        }, delay);
+        delay += 1000;
+      });
+    }
+
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll("section");
+      const navLinks = document.querySelectorAll(".nav-link");
+      let current = "";
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (pageYOffset >= sectionTop - 60) {
+          current = section.getAttribute("id");
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove("active");
+        if (link.getAttribute("href") === `#${current}`) {
+          link.classList.add("active");
+        }
+      });
+    });
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+  <div class="flex">
+    <aside class="w-64 p-4 border-r h-screen sticky top-0 bg-white shadow">
+      <h2 class="text-lg font-bold mb-4">🧭 Navigation</h2>
+      <nav class="flex flex-col space-y-2">
+        <a href="#intro" class="nav-link">Intro</a>
+        <a href="#files" class="nav-link">Files</a>
+        <a href="#build" class="nav-link">Build & Run</a>
+        <a href="#debug" class="nav-link">GDB Debugging</a>
+        <a href="#concepts" class="nav-link">Key Concepts</a>
+        <a href="#animation" class="nav-link">Function Animation</a>
+        <a href="#quiz" class="nav-link">Quiz</a>
+        <a href="#resources" class="nav-link">Resources</a>
+      </nav>
+    </aside>
+
+    <main class="flex-1 p-6 overflow-y-auto">
+      <section id="intro">
+        <h1 class="text-4xl font-bold mb-4 text-blue-700">🔧 CallMeMaybe: Calling Conventions Explained</h1>
+        <p class="mb-4">This interactive guide explains x86 and x86_64 calling conventions using a C program and assembly code. Explore animations, build instructions, and quizzes to reinforce learning.</p>
+      </section>
+
+      <section id="files">
+        <h2 class="text-2xl font-semibold mt-10 mb-2 text-indigo-700">📂 Files</h2>
+        <ul class="list-disc list-inside mb-6">
+          <li><code>callme.c</code> - Main C program</li>
+          <li><code>add_asm_x64.s</code> - 64-bit assembly implementation</li>
+          <li><code>add_asm_x86.s</code> - 32-bit assembly implementation</li>
+        </ul>
+      </section>
+
+      <section id="build">
+        <h2 class="text-2xl font-semibold mt-10 mb-2 text-indigo-700">💻 Build & Run Instructions</h2>
+        <h3 class="text-xl font-semibold">64-bit</h3>
+        <pre class="bg-white p-4 rounded shadow text-sm">as --64 -o add_asm.o add_asm_x64.s
+gcc -no-pie -o callme callme.c add_asm.o
+./callme</pre>
+
+        <h3 class="text-xl font-semibold mt-4">32-bit</h3>
+        <pre class="bg-white p-4 rounded shadow text-sm">as --32 -o add_asm.o add_asm_x86.s
+gcc -m32 -o callme32 callme.c add_asm.o
+./callme32</pre>
+      </section>
+
+      <section id="debug">
+        <h2 class="text-2xl font-semibold mt-10 mb-2 text-indigo-700">🐞 Debugging with GDB</h2>
+        <pre class="bg-white p-4 rounded shadow text-sm">gdb ./callme
+(gdb) break add_asm
+(gdb) run
+(gdb) info registers rdi rsi   # for 64-bit
+(gdb) x/2xw $rsp               # for 32-bit</pre>
+      </section>
+
+      <section id="concepts">
+        <h2 class="text-2xl font-semibold mt-10 mb-2 text-indigo-700">🧠 Key Concepts</h2>
+        <ul class="list-disc list-inside mb-6">
+          <li>Arguments in registers (x64) vs stack (x86)</li>
+          <li>Return values in <code>rax</code> / <code>eax</code></li>
+          <li>Caller vs callee cleanup</li>
+          <li>Stack frame setup with <code>rbp</code> / <code>ebp</code></li>
+        </ul>
+      </section>
+
+      <section id="animation">
+        <h2 class="text-2xl font-semibold mt-10 mb-4 text-purple-700">🎞️ X86 Function Call Animation</h2>
+        <div class="code-box">
+<span class="anim-line">section .text        ; Code section starts</span>
+<span class="anim-line">    global _start    ; Entry point for the program</span>
+<span class="anim-line">_start:</span>
+<span class="anim-line">    call my_function ; Call the function my_function</span>
+<span class="anim-line">    mov eax, 60      ; Load exit system call number (60) into eax</span>
+<span class="anim-line">    xor edi, edi     ; Set exit status to 0 (edi = 0)</span>
+<span class="anim-line">    syscall          ; Invoke system call to exit the program</span>
+<span class="anim-line">my_function:</span>
+<span class="anim-line">    push rbp         ; Save the old base pointer</span>
+<span class="anim-line">    mov rbp, rsp     ; Set new base pointer</span>
+<span class="anim-line">    ; Function body here</span>
+<span class="anim-line">    pop rbp          ; Restore the base pointer</span>
+<span class="anim-line">    ret              ; Return to caller</span>
+        </div>
+        <button onclick="runAnimation()" class="mt-4 px-4 py-2 bg-purple-600 text-white rounded shadow">▶ Run Animation</button>
+      </section>
+
+      <section id="quiz">
+        <h2 class="text-2xl font-semibold mt-10 mb-4 text-green-700">✅ Test Your Knowledge</h2>
+
+        <div class="mb-6">
+          <p class="font-medium">1. In x86_64 calling convention, the first argument is passed via the stack. (True/False)</p>
+          <label class="block"><input type="radio" name="q1" value="true"> True</label>
+          <label class="block"><input type="radio" name="q1" value="false"> False</label>
+          <button onclick="checkAnswer('q1', 'false')" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded">Check</button>
+          <p id="q1-result" class="mt-1"></p>
+        </div>
+
+        <div class="mb-6">
+          <p class="font-medium">2. In x86 (32-bit), the return value is typically stored in the EAX register. (True/False)</p>
+          <label class="block"><input type="radio" name="q2" value="true"> True</label>
+          <label class="block"><input type="radio" name="q2" value="false"> False</label>
+          <button onclick="checkAnswer('q2', 'true')" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded">Check</button>
+          <p id="q2-result" class="mt-1"></p>
+        </div>
+
+        <div class="mb-6">
+          <p class="font-medium">3. In x86_64, the stack must be 16-byte aligned before calling a function. (True/False)</p>
+          <label class="block"><input type="radio" name="q3" value="true"> True</label>
+          <label class="block"><input type="radio" name="q3" value="false"> False</label>
+          <button onclick="checkAnswer('q3', 'true')" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded">Check</button>
+          <p id="q3-result" class="mt-1"></p>
+        </div>
+      </section>
+
+      <section id="resources">
+        <h2 class="text-2xl font-semibold mt-10 mb-2 text-indigo-700">📚 Learn More</h2>
+        <ul class="list-disc list-inside">
+          <li><a href="https://en.wikipedia.org/wiki/X86_calling_conventions" class="text-blue-600 hover:underline">x86 Calling Conventions</a></li>
+          <li><a href="https://wiki.osdev.org/System_V_ABI" class="text-blue-600 hover:underline">System V ABI</a></li>
+          <li><a href="https://ghidra-sre.org/" class="text-blue-600 hover:underline">Ghidra Reverse Engineering</a></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
